@@ -658,7 +658,7 @@ var PLAN = { 12: [4, 4, 4], 16: [5, 6, 5], 24: [8, 9, 7] };
    FORM_URL: адреса форми з /viewform, FORM_ENTRY: номер поля, наприклад "entry.1234567890". */
 var FORM_URL = "", FORM_ENTRY = "";
 /* Адреса веб-застосунку Google Apps Script (див. apps-script.gs). Порожньо = таблиця не підключена. */
-var APPS_URL = "";
+var APPS_URL = "https://script.google.com/macros/s/AKfycbwUvGdYBO5Py-zP7sH9BM8NhdHv8qZH2A2eVpCMASZvyJTEIgXuC20qVDt659HzR-B2/exec";
 var S = { demo: false, db: null, dbCodes: [], sheetCodes: [], sheetState: "off", skey: "", db: null, dbState: "off", saved: "", view: "home", stage: "pre", mode: "test", pid: "", cls: "", n: 16, date: "", setid: "", code: "", err: "", q: [], i: 0, ans: [], t0: 0, sender: false, link: false, conf: 2, fb: null, dataText: "", ana: null };
 function ls(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
