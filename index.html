@@ -207,6 +207,46 @@ a.btn { text-decoration: none; display: inline-block; }
 .figscroll { max-height: 560px; overflow: auto; }
 .figs { display: grid; gap: 22px; }
 .demo { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 12px 14px; font-size: 0.9375rem; font-weight: 500; }
+
+/* навчальна інфографіка */
+.tabs { flex-wrap: wrap; }
+.ig-mail { border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); padding: 14px; display: grid; gap: 12px; min-width: 0; }
+.ig-line { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; overflow-wrap: anywhere; }
+.ig-n { width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 0.8125rem; font-weight: 700; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.ig-ph { font-size: 0.8125rem; color: var(--muted); margin-top: 2px; }
+.hl { background: var(--danger-bg); color: var(--danger); border-radius: 4px; padding: 0 4px; font-weight: 500; }
+.ig-btn { display: inline-block; background: var(--accent); color: var(--accent-ink); border-radius: 8px; padding: 8px 14px; font-weight: 600; }
+.ig-leg { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ig-leg li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; font-size: 0.9375rem; }
+.url { font-family: var(--font-mono); font-size: 0.9375rem; line-height: 1.8; overflow-wrap: anywhere; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.u-a, .u-d { color: var(--muted); }
+.u-b { color: var(--warn); background: var(--warn-bg); border-radius: 4px; padding: 0 2px; }
+.u-c { color: var(--danger); background: var(--danger-bg); border-radius: 4px; padding: 0 2px; font-weight: 600; }
+.u-key { display: grid; gap: 8px; }
+.u-key > div { display: grid; grid-template-columns: auto 1fr; gap: 10px; font-size: 0.9375rem; align-items: start; overflow-wrap: anywhere; }
+.sw { width: 14px; height: 14px; border-radius: 4px; margin-top: 5px; }
+.sw.a { background: var(--muted); } .sw.b { background: var(--warn); } .sw.c { background: var(--danger); }
+.cmp { display: grid; gap: 8px; }
+.cmp-h, .cmp-row { display: grid; grid-template-columns: 0.9fr 1.2fr 1.2fr; gap: 10px; }
+.cmp-h { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 0 12px; }
+.cmp-row { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 0.9375rem; min-width: 0; overflow-wrap: anywhere; }
+.cmp-k { font-weight: 600; }
+.cmp-all { background: var(--ok-bg); color: var(--ok); border-radius: 10px; padding: 12px 14px; font-weight: 500; font-size: 0.9375rem; }
+@media (max-width: 600px) {
+  .cmp-h { display: none; }
+  .cmp-row { grid-template-columns: 1fr; gap: 4px; }
+  .cmp-a::before { content: "Класичний: "; font-weight: 600; color: var(--muted); }
+  .cmp-b::before { content: "Від ШІ: "; font-weight: 600; color: var(--muted); }
+}
+.flow { list-style: none; margin: 0; padding: 0; display: grid; }
+.flow li { display: grid; grid-template-columns: auto 1fr; gap: 14px; position: relative; padding-bottom: 16px; }
+.flow li:not(:last-child)::before { content: ""; position: absolute; left: 17px; top: 38px; bottom: 2px; width: 2px; background: var(--line); }
+.fn { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 700; position: relative; }
+.flow b { display: block; }
+.flow span.fx { color: var(--muted); font-size: 0.9375rem; }
+
+.cert-img { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.cert-wait { background: var(--surface-2); border: 1px dashed var(--line); border-radius: 8px; padding: 40px 16px; text-align: center; color: var(--muted); }
 </style>
 
 </head>
@@ -659,7 +699,9 @@ var PLAN = { 12: [4, 4, 4], 16: [5, 6, 5], 24: [8, 9, 7] };
 var FORM_URL = "", FORM_ENTRY = "";
 /* Адреса веб-застосунку Google Apps Script (див. apps-script.gs). Порожньо = таблиця не підключена. */
 var APPS_URL = "https://script.google.com/macros/s/AKfycbwUvGdYBO5Py-zP7sH9BM8NhdHv8qZH2A2eVpCMASZvyJTEIgXuC20qVDt659HzR-B2/exec";
-var S = { demo: false, db: null, dbCodes: [], sheetCodes: [], sheetState: "off", skey: "", db: null, dbState: "off", saved: "", view: "home", stage: "pre", mode: "test", pid: "", cls: "", n: 16, date: "", setid: "", code: "", err: "", q: [], i: 0, ans: [], t0: 0, sender: false, link: false, conf: 2, fb: null, dataText: "", ana: null };
+/* Сертифікат: за бажанням вкажіть автора дослідження й навчальний заклад (рядки на сертифікаті). Порожньо = не показувати. */
+var CERT_AUTHOR = "", CERT_ORG = "";
+var S = { certURL: "", demo: false, db: null, dbCodes: [], sheetCodes: [], sheetState: "off", skey: "", db: null, dbState: "off", saved: "", view: "home", stage: "pre", mode: "test", pid: "", cls: "", n: 16, date: "", setid: "", code: "", err: "", q: [], i: 0, ans: [], t0: 0, sender: false, link: false, conf: 2, fb: null, dataText: "", ana: null };
 function ls(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 S.pid = ls("af2_pid", ""); S.cls = ls("af2_cls", "");
@@ -697,10 +739,10 @@ function syncInputs() {
 
 /* ---------- Розмітка: загальне ---------- */
 function header() {
-  var tabs = [["home", "Тренажер"], ["guide", "Пам’ятка СТОП"]];
+  var tabs = [["home", "Тренажер"], ["info", "Інфографіка"], ["guide", "Пам’ятка СТОП"]];
   if (isAdmin() || S.view === "data") tabs.push(["data", "Дані"]);
   tabs.push(["about", "Про проєкт"]);
-  var cur = S.view === "quiz" || S.view === "result" ? "home" : S.view;
+  var cur = S.view === "quiz" || S.view === "result" || S.view === "cert" ? "home" : S.view;
   return '<header class="top"><div class="brand"><i></i>Антифіш</div><nav class="tabs" aria-label="Розділи">' +
     tabs.map(function (t) { return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (cur === t[0] ? ' aria-current="page"' : "") + ">" + t[1] + "</button>"; }).join("") +
     "</nav></header>";
@@ -745,6 +787,7 @@ function viewHome() {
     stageCard(3, "post", "Тест після навчання", "Інші 16 повідомлень, теж без підказок. Після нього покажемо розбір і порівняння з першим тестом.",
       '<button class="btn main sm" data-act="begin" data-stage="post">Почати тест</button>') +
     "</div></section>" +
+    (certReady() ? '<section class="panel"><h2>Сертифікат</h2><p class="lead">Ви виконали всі три етапи. Можна отримати сертифікат учасника.</p><div class="row"><button class="btn main" data-act="cert">Отримати сертифікат</button></div></section>' : "") +
     '<section class="panel"><details class="box"><summary>Вільне тренування (випадкові повідомлення з бази)</summary><div class="in">' +
     '<p class="note">Для знайомства з тренажером. Результати цього режиму не враховуються у дослідженні.</p>' +
     '<fieldset class="conf"><legend>Скільки повідомлень</legend><div class="seg">' +
@@ -915,6 +958,7 @@ function viewResult() {
     }).join("") + "</div></section>";
   }
 
+  if (S.stage === "post" && certReady()) h += '<section class="panel"><h2>Сертифікат учасника</h2><p class="lead">Ви виконали всі три етапи.</p><div class="row"><button class="btn main" data-act="cert">Отримати сертифікат</button></div></section>';
   h += '<section class="panel"><h2>Збереження результату</h2><p class="lead">Якщо результат не зберігся автоматично, скопіюйте код і надішліть його вчителю. У ньому всі ваші відповіді, нічого іншого пересилати не потрібно.</p>' +
     '<textarea class="short" id="code" readonly aria-label="Код результату">' + esc(S.code) + "</textarea>" +
     '<p class="note" id="saveNote"></p>' +
@@ -1209,6 +1253,120 @@ function viewData() {
     "</section>" + (S.ana ? '<section class="panel">' + anaHTML(S.ana) + "</section>" : "");
 }
 
+/* ---------- Сертифікат ---------- */
+function certReady() { return isDone("pre") && isDone("train") && isDone("post"); }
+function titleCase(t) { return String(t || "").trim().replace(/\s+/g, " ").toLowerCase().replace(/(^|[\s\-’'])(\p{L})/gu, function (m, a, b) { return a + b.toUpperCase(); }); }
+function wrapText(x, text, maxW) {
+  var words = String(text).split(" "), lines = [], cur = "";
+  words.forEach(function (w) { var t = cur ? cur + " " + w : w; if (x.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; });
+  if (cur) lines.push(cur);
+  return lines;
+}
+function makeCert(done) {
+  var W = 1754, H = 1240, c = document.createElement("canvas"); c.width = W; c.height = H;
+  var DISP = '"Unbounded", "IBM Plex Sans", system-ui, Arial, sans-serif', BODY = '"IBM Plex Sans", system-ui, Arial, sans-serif';
+  function draw() {
+    var x = c.getContext("2d"), teal = "#0E6B6F", ink = "#14212B", mut = "#566774";
+    x.fillStyle = "#FFFFFF"; x.fillRect(0, 0, W, H);
+    x.strokeStyle = teal; x.lineWidth = 14; x.strokeRect(40, 40, W - 80, H - 80);
+    x.lineWidth = 3; x.strokeRect(72, 72, W - 144, H - 144);
+    // знак
+    var lx = W / 2 - 44, ly = 120;
+    x.fillStyle = teal; x.beginPath(); if (x.roundRect) x.roundRect(lx, ly, 88, 88, 20); else x.rect(lx, ly, 88, 88); x.fill();
+    x.strokeStyle = "#FFFFFF"; x.lineWidth = 10; x.beginPath(); x.arc(W / 2, ly + 44, 18, 0, Math.PI * 2); x.stroke();
+    x.textAlign = "center"; x.textBaseline = "alphabetic";
+    x.fillStyle = teal; x.font = "700 34px " + DISP; x.fillText("Антифіш", W / 2, 285);
+    x.fillStyle = ink; x.font = "700 86px " + DISP; x.fillText("СЕРТИФІКАТ", W / 2, 420);
+    x.font = "500 44px " + DISP; x.fillText("учасника дослідження", W / 2, 490);
+    x.fillStyle = mut; x.font = "400 32px " + BODY; x.fillText("Дослідження «Ефективність виявлення фішингових повідомлень,", W / 2, 570);
+    x.fillText("створених за допомогою штучного інтелекту»", W / 2, 612);
+    // ім'я
+    var name = titleCase(S.pid), size = 92;
+    x.fillStyle = ink;
+    do { x.font = "700 " + size + "px " + DISP; size -= 4; } while (x.measureText(name).width > W - 340 && size > 36);
+    x.fillText(name, W / 2, 780);
+    x.strokeStyle = teal; x.lineWidth = 4; x.beginPath(); x.moveTo(W / 2 - 520, 820); x.lineTo(W / 2 + 520, 820); x.stroke();
+    x.fillStyle = mut; x.font = "400 38px " + BODY; x.fillText("Клас: " + String(S.cls).trim(), W / 2, 880);
+    x.fillStyle = ink; x.font = "400 34px " + BODY;
+    wrapText(x, "Виконано всі етапи: тест до навчання, навчання за пам’яткою «СТОП» і тест після навчання.", 1200).forEach(function (l, i) { x.fillText(l, W / 2, 980 + i * 46); });
+    // низ
+    var d = ls("af2_done", {})[idKey(S.pid, S.cls)], date = d && d.post ? new Date(d.post) : new Date();
+    var ds = date.toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" });
+    x.fillStyle = mut; x.font = "400 30px " + BODY; x.textAlign = "left"; x.fillText("Дата: " + ds, 150, H - 130);
+    x.textAlign = "right"; if (CERT_AUTHOR) x.fillText("Автор дослідження: " + CERT_AUTHOR, W - 150, H - 130);
+    x.textAlign = "center"; if (CERT_ORG) x.fillText(CERT_ORG, W / 2, H - 130);
+    c.toBlob(function (b) { if (S.certURL) { try { URL.revokeObjectURL(S.certURL); } catch (e) {} } S.certURL = URL.createObjectURL(b); done(); });
+  }
+  try { Promise.all([document.fonts.load("700 40px Unbounded"), document.fonts.load("500 40px Unbounded"), document.fonts.load("400 30px 'IBM Plex Sans'")]).then(draw, draw); } catch (e) { draw(); }
+}
+function viewCert() {
+  var h = '<section class="panel"><h1>Сертифікат учасника</h1>';
+  if (!certReady()) return h + '<p class="lead">Сертифікат з’являється, коли на цьому пристрої пройдено всі три етапи: тест до навчання, навчання і тест після навчання, з тим самим ім’ям і класом.</p><div class="row"><button class="btn main" data-act="again">До етапів</button></div></section>';
+  h += '<p class="lead">Дякуємо за участь. Збережіть сертифікат.</p>';
+  if (!S.certURL) return h + '<div class="cert-wait">Готую сертифікат…</div></section>';
+  h += '<img class="cert-img" src="' + S.certURL + '" alt="Сертифікат учасника ' + esc(titleCase(S.pid)) + '">' +
+    '<p class="note">На телефоні: натисніть на картинку й утримуйте, потім виберіть «Зберегти зображення».</p>' +
+    '<div class="row"><a class="btn main" href="' + S.certURL + '" download="Сертифікат-Антифіш.png">Завантажити PNG</a><button class="btn ghost" data-act="again">На головну</button></div></section>';
+  return h;
+}
+function openCert() {
+  syncInputs(); S.view = "cert"; S.certURL = ""; render(); window.scrollTo(0, 0);
+  if (certReady()) makeCert(function () { if (S.view === "cert") render(); });
+}
+
+/* ---------- Навчальна інфографіка ---------- */
+function viewInfo() {
+  function n(k) { return '<span class="ig-n">' + k + "</span>"; }
+  var h = '<section class="panel"><h1>Як розпізнати фішинг</h1><p class="lead">Чотири картинки, які варто переглянути перед тестом. Усі назви й адреси тут вигадані.</p></section>';
+
+  h += '<section class="panel"><h2>Анатомія фішингового листа</h2><p class="lead">Цифри на листі відповідають поясненням під ним. Червоним позначено те, на що варто дивитися.</p>' +
+    '<div class="ig-mail">' +
+    '<div class="ig-line">' + n(1) + '<div><b>Служба безпеки ПівденьБанк</b><div class="ig-ph"><span class="hl mono">security@pivdenbank-support.top</span></div></div></div>' +
+    '<div class="ig-line">' + n(2) + '<div><b>Підтвердіть вхід <span class="hl">протягом 24 годин</span></b></div></div>' +
+    '<div class="ig-line">' + n(3) + '<div><span class="hl">Доброго дня, Сашо!</span> Ми помітили вхід до вашого рахунку з нового пристрою (Windows, Київ).</div></div>' +
+    '<div class="ig-line">' + n(4) + '<div>Щоб не втратити доступ, введіть <span class="hl">логін, пароль і код із SMS</span>.</div></div>' +
+    '<div class="ig-line">' + n(5) + '<div><span class="ig-btn">Підтвердити в кабінеті</span><div class="ig-ph">Посилання веде на: <span class="hl mono">pivdenbank-secure-login.top/verify</span></div></div></div>' +
+    "</div>" +
+    '<ul class="ig-leg">' +
+    "<li>" + n(1) + "<span><b>Відправник.</b> Ім’я схоже на банк, але адреса після @ чужа. Порівняйте її з офіційним сайтом (pivdenbank.ua).</span></li>" +
+    "<li>" + n(2) + "<span><b>Тиск.</b> «Протягом 24 годин» і страх втратити доступ. Мета в тому, щоб ви не встигли подумати.</span></li>" +
+    "<li>" + n(3) + "<span><b>Бездоганний текст.</b> Звернення на ім’я і жодної помилки. Штучний інтелект так пише легко, тому відсутність помилок нічого не доводить.</span></li>" +
+    "<li>" + n(4) + "<span><b>Прохання про дані.</b> Пароль і код із SMS не просять ні банки, ні школа, ні сервіси.</span></li>" +
+    "<li>" + n(5) + "<span><b>Посилання.</b> Напис на кнопці виглядає нормально, але справжня адреса веде на чужий домен.</span></li>" +
+    "</ul></section>";
+
+  h += '<section class="panel"><h2>Як читати адресу посилання</h2><p class="lead">Господаря сторінки визначає домен: дві останні частини адреси перед першим «/». Для зон на кшталт .com.ua це три частини. Усе, що лівіше, може вписати будь-хто.</p>' +
+    '<div class="url" role="img" aria-label="Адреса https://secure.pivdenbank-login.top/verify?id=88213, де домен pivdenbank-login.top"><span class="u-a">https://</span><span class="u-b">secure.</span><span class="u-c">pivdenbank-login.top</span><span class="u-d">/verify?id=88213</span></div>' +
+    '<div class="u-key">' +
+    '<div><span class="sw a"></span><span><b>https://</b> і все після домену нічого не доводять. Замочок у браузері означає лише шифрування, а не чесність сайту.</span></div>' +
+    '<div><span class="sw b"></span><span><b>secure.</b> це піддомен. Туди можна вписати що завгодно, навіть назву банку.</span></div>' +
+    '<div><span class="sw c"></span><span><b>pivdenbank-login.top</b> це справжній господар сторінки. Це не pivdenbank.ua.</span></div></div>' +
+    "<h3>Як виглядають підміни</h3>" +
+    '<ul class="signs">' +
+    '<li><span class="tag bad">підміна</span><span><span class="mono">pivdenbank.ua.verify-login.top</span>: господар verify-login.top, а не банк.</span></li>' +
+    '<li><span class="tag bad">підміна</span><span><span class="mono">pivdenbank-ua.top</span>: інша зона (.top замість .ua).</span></li>' +
+    '<li><span class="tag bad">підміна</span><span><span class="mono">pivdenbamk.ua</span>: літера m замість n.</span></li>' +
+    '<li><span class="tag ok">справжнє</span><span><span class="mono">pivdenbank.ua</span>: офіційний сайт банку.</span></li>' +
+    "</ul></section>";
+
+  h += '<section class="panel"><h2>Класичний фішинг і фішинг від ШІ</h2><p class="lead">Старі поради «шукай помилки» працюють лише проти першого типу.</p>' +
+    '<div class="cmp"><div class="cmp-h"><span>Ознака</span><span>Класичний</span><span>Від ШІ</span></div>' +
+    '<div class="cmp-row"><span class="cmp-k">Помилки в тексті</span><span class="cmp-a">Часто («сплатить», «аккаунт»)</span><span class="cmp-b">Майже немає</span></div>' +
+    '<div class="cmp-row"><span class="cmp-k">Звернення</span><span class="cmp-a">«Шановний користувач»</span><span class="cmp-b">На ім’я, зі згадкою вашого сервісу чи школи</span></div>' +
+    '<div class="cmp-row"><span class="cmp-k">Привід</span><span class="cmp-a">Виграш, спадок, «рахунок заблоковано»</span><span class="cmp-b">Правдоподібна ситуація: новий вхід, оплата, анкета від школи</span></div>' +
+    '<div class="cmp-row"><span class="cmp-k">Тон</span><span class="cmp-a">Різкий, великі літери, знаки оклику</span><span class="cmp-b">Спокійний і діловий</span></div>' +
+    '<div class="cmp-all">Що працює проти обох: адреса відправника, куди веде посилання, що саме просять зробити, і чи чекали ви це повідомлення.</div></div></section>';
+
+  h += '<section class="panel"><h2>Що робити, якщо сумніваєтесь</h2>' +
+    '<ol class="flow">' +
+    '<li><span class="fn">1</span><div><b>Зупиніться</b><span class="fx">Не натискайте на посилання і не відкривайте вкладення.</span></div></li>' +
+    '<li><span class="fn">2</span><div><b>Перевірте іншим шляхом</b><span class="fx">Відкрийте сайт чи застосунок самостійно, або зателефонуйте знайомому за відомим вам номером.</span></div></li>' +
+    '<li><span class="fn">3</span><div><b>Покажіть дорослому або вчителю</b><span class="fx">Перешліть повідомлення, але не відповідайте на нього.</span></div></li>' +
+    '<li><span class="fn">4</span><div><b>Якщо вже ввели дані</b><span class="fx">Одразу змініть пароль, зверніться до банку чи підтримки сервісу й увімкніть двоетапну перевірку.</span></div></li>' +
+    '</ol><div class="row"><button class="btn main" data-act="tab" data-v="home">Перевірити себе в тесті</button><button class="btn ghost" data-act="tab" data-v="guide">Пам’ятка СТОП</button></div></section>';
+  return h;
+}
+
 /* ---------- Пам’ятка ---------- */
 function viewGuide() {
   return '<section class="panel"><h1>Пам’ятка «СТОП»</h1><p class="lead">Чотири перевірки, які працюють і для листів зі старими помилками, і для тексту від ШІ. Якщо щось викликає сумнів, зупиніться і перевірте іншим каналом.</p>' +
@@ -1259,6 +1417,8 @@ function render() {
   else if (v === "quiz") body = viewQuiz();
   else if (v === "result") body = viewResult();
   else if (v === "guide") body = viewGuide();
+  else if (v === "info") body = viewInfo();
+  else if (v === "cert") body = viewCert();
   else if (v === "data") body = viewData();
   else body = viewAbout();
   document.getElementById("app").innerHTML = header() + body;
@@ -1335,6 +1495,7 @@ document.addEventListener("click", function (e) {
       .catch(function () { S.sheetState = "error"; render(); });
   }
   else if (act === "hideadmin") { lsSet("af2_admin", 0); try { history.replaceState(null, "", location.pathname + location.search); } catch (x) {} S.view = "home"; S.demo = false; render(); window.scrollTo(0, 0); }
+  else if (act === "cert") openCert();
   else if (act === "demo") { S.demo = !S.demo; render(); }
   else if (act === "clearcodes") { S.dataText = ""; S.ana = null; render(); }
 });
