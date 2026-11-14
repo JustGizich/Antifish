@@ -198,6 +198,15 @@ a.btn { text-decoration: none; display: inline-block; }
 .tbl th, .tbl td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
 .tbl th { color: var(--muted); font-weight: 500; font-size: 0.8125rem; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* інфографіка: назви кольорів для графіків збігаються з основною палітрою */
+:root { --card: var(--surface); --pen: var(--accent); --green: var(--ok); --red: var(--danger); --grid-ink: var(--line); --c-classic: var(--warn); --c-ai: var(--danger); --c-legit: var(--ok); }
+.fig { margin: 0; display: grid; gap: 8px; min-width: 0; }
+.fig-t { font-weight: 600; font-size: 1rem; }
+.fig .box-svg { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 8px; min-width: 0; }
+.figscroll { max-height: 560px; overflow: auto; }
+.figs { display: grid; gap: 22px; }
+.demo { background: var(--warn-bg); color: var(--warn); border-radius: 10px; padding: 12px 14px; font-size: 0.9375rem; font-weight: 500; }
 </style>
 
 </head>
@@ -649,8 +658,8 @@ var PLAN = { 12: [4, 4, 4], 16: [5, 6, 5], 24: [8, 9, 7] };
    FORM_URL: адреса форми з /viewform, FORM_ENTRY: номер поля, наприклад "entry.1234567890". */
 var FORM_URL = "", FORM_ENTRY = "";
 /* Адреса веб-застосунку Google Apps Script (див. apps-script.gs). Порожньо = таблиця не підключена. */
-var APPS_URL = "https://script.google.com/macros/s/AKfycbwUvGdYBO5Py-zP7sH9BM8NhdHv8qZH2A2eVpCMASZvyJTEIgXuC20qVDt659HzR-B2/exec";
-var S = { db: null, dbCodes: [], sheetCodes: [], sheetState: "off", skey: "", db: null, dbState: "off", saved: "", view: "home", stage: "pre", mode: "test", pid: "", cls: "", n: 16, date: "", setid: "", code: "", err: "", q: [], i: 0, ans: [], t0: 0, sender: false, link: false, conf: 2, fb: null, dataText: "", ana: null };
+var APPS_URL = "";
+var S = { demo: false, db: null, dbCodes: [], sheetCodes: [], sheetState: "off", skey: "", db: null, dbState: "off", saved: "", view: "home", stage: "pre", mode: "test", pid: "", cls: "", n: 16, date: "", setid: "", code: "", err: "", q: [], i: 0, ans: [], t0: 0, sender: false, link: false, conf: 2, fb: null, dataText: "", ana: null };
 function ls(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
 function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
 S.pid = ls("af2_pid", ""); S.cls = ls("af2_cls", "");
@@ -659,7 +668,17 @@ function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&
 function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 function pct(n, d) { return d ? Math.round(n * 100 / d) : 0; }
 function byId(id) { for (var i = 0; i < MSGS.length; i++) if (MSGS[i].id === id) return MSGS[i]; return null; }
-function pkey(p) { return String(p || "").trim().toLowerCase().replace(/\s+/g, " "); }
+var LOOK = { a: "а", c: "с", e: "е", i: "і", o: "о", p: "р", x: "х", y: "у", k: "к", m: "м" };
+function lookalike(t) { return t.replace(/[aceiopxykm]/g, function (c) { return LOOK[c]; }); }
+/* Ім’я зводиться до слів у нижньому регістрі, відсортованих за абеткою: «Коваленко Олена» і «олена коваленко» дають однаковий ключ. */
+function pkey(p) {
+  var t = String(p || "").toLowerCase().replace(/[’'ʼ`´]/g, "").replace(/[^\p{L}\p{N}\s]/gu, " ");
+  return lookalike(t).split(/\s+/).filter(Boolean).sort().join(" ");
+}
+function idKey(name, cls) { return pkey(name) + "~" + lookalike(String(cls || "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "")); }
+/* Вкладка «Дані» відкривається адресою з #admin або п’ятьма швидкими натисканнями на логотип. Запам’ятовується на цьому пристрої. */
+var BR = [];
+function isAdmin() { try { if (location.hash === "#admin") { lsSet("af2_admin", 1); return true; } return !!ls("af2_admin", 0); } catch (e) { return false; } }
 function orderFor(key) { var s = 0; for (var i = 0; i < key.length; i++) s += key.charCodeAt(i); return s % 2 === 0 ? { pre: "A", post: "B" } : { pre: "B", post: "A" }; }
 function setMsgs(k) { return SETS[k].map(byId); }
 function pickSet(n) {
@@ -667,8 +686,8 @@ function pickSet(n) {
   kinds.forEach(function (k, idx) { out = out.concat(shuffle(MSGS.filter(function (m) { return m.origin === k; })).slice(0, plan[idx])); });
   return shuffle(out);
 }
-function isDone(stage) { var m = ls("af2_done", {})[pkey(S.pid)]; return !!(m && m[stage]); }
-function markDone(stage) { var all = ls("af2_done", {}), k = pkey(S.pid); all[k] = all[k] || {}; all[k][stage] = S.date; lsSet("af2_done", all); }
+function isDone(stage) { var m = ls("af2_done", {})[idKey(S.pid, S.cls)]; return !!(m && m[stage]); }
+function markDone(stage) { var all = ls("af2_done", {}), k = idKey(S.pid, S.cls); all[k] = all[k] || {}; all[k][stage] = S.date; lsSet("af2_done", all); }
 function syncInputs() {
   var p = document.getElementById("pid"), c = document.getElementById("cls");
   if (p) S.pid = p.value; if (c) S.cls = c.value;
@@ -678,7 +697,9 @@ function syncInputs() {
 
 /* ---------- Розмітка: загальне ---------- */
 function header() {
-  var tabs = [["home", "Тренажер"], ["guide", "Пам’ятка СТОП"], ["data", "Дані"], ["about", "Про проєкт"]];
+  var tabs = [["home", "Тренажер"], ["guide", "Пам’ятка СТОП"]];
+  if (isAdmin() || S.view === "data") tabs.push(["data", "Дані"]);
+  tabs.push(["about", "Про проєкт"]);
   var cur = S.view === "quiz" || S.view === "result" ? "home" : S.view;
   return '<header class="top"><div class="brand"><i></i>Антифіш</div><nav class="tabs" aria-label="Розділи">' +
     tabs.map(function (t) { return '<button class="tab" data-act="tab" data-v="' + t[0] + '"' + (cur === t[0] ? ' aria-current="page"' : "") + ">" + t[1] + "</button>"; }).join("") +
@@ -711,9 +732,9 @@ function stageCard(num, key, title, text, btns) {
 function viewHome() {
   return '<section class="panel"><h1>Фішинг чи справжнє повідомлення?</h1>' +
     '<p class="lead">Листи, SMS і чати: частину написали шахраї за старими шаблонами, частину створив штучний інтелект, решта справжні. Для кожного вирішіть, чи можна йому довіряти.</p>' +
-    '<div class="fields"><label class="f" for="pid">Код учасника<input type="text" id="pid" value="' + esc(S.pid) + '" autocomplete="off" placeholder="наприклад, 9Б-07"></label>' +
-    '<label class="f" for="cls">Клас або група<input type="text" id="cls" value="' + esc(S.cls) + '" autocomplete="off" placeholder="наприклад, 9-Б"></label></div>' +
-    '<p class="note">Код видає вчитель. Не вводьте прізвище.</p>' +
+    '<div class="fields"><label class="f" for="pid">Прізвище та ім’я<input type="text" id="pid" value="' + esc(S.pid) + '" autocomplete="off" placeholder="наприклад, Коваленко Олена"></label>' +
+    '<label class="f" for="cls">Клас<input type="text" id="cls" value="' + esc(S.cls) + '" autocomplete="off" placeholder="наприклад, 9-Б"></label></div>' +
+    '<p class="note">Пишіть однаково на всіх трьох етапах: за ім’ям і класом сторінка зв’язує результати «до» і «після». Відповіді бачить лише автор дослідження.</p>' +
     (S.err ? '<p class="err" role="alert">' + esc(S.err) + "</p>" : "") +
     "</section>" +
     '<section class="panel"><h2>Три етапи</h2><div class="steps">' +
@@ -814,7 +835,7 @@ function finish() {
   var st = stats();
   if (S.stage !== "free") {
     markDone(S.stage);
-    var r = ls("af2_res", {}); r[pkey(S.pid) + "|" + S.stage] = { ok: st.ok, n: st.n, cat: st.cat }; lsSet("af2_res", r);
+    var r = ls("af2_res", {}); r[idKey(S.pid, S.cls) + "|" + S.stage] = { ok: st.ok, n: st.n, cat: st.cat }; lsSet("af2_res", r);
   }
   S.saved = (S.db || APPS_URL) && S.stage !== "free" ? "pending" : "local";
   S.view = "result"; render(); window.scrollTo(0, 0);
@@ -831,7 +852,7 @@ function sendSheet(doc) {
 function saveRemote(st) {
   if (S.stage === "free" || (!S.db && !APPS_URL)) { S.saved = "local"; refreshSaveNote(); return; }
   var doc = { code: S.code, pid: S.pid, cls: S.cls, stage: S.stage, set: S.setid, date: S.date, ok: st.ok, n: st.n };
-  var a = S.db ? S.db.collection("runs").doc(safeId(pkey(S.pid) + "_" + S.stage)).set(doc).then(function () { return true; }, function () { return false; }) : Promise.resolve(false);
+  var a = S.db ? S.db.collection("runs").doc(safeId(idKey(S.pid, S.cls) + "_" + S.stage)).set(doc).then(function () { return true; }, function () { return false; }) : Promise.resolve(false);
   var b = sendSheet(doc);
   Promise.all([a, b]).then(function (r) { S.saved = r[0] || r[1] ? "shared" : "local"; refreshSaveNote(); });
 }
@@ -863,10 +884,10 @@ function viewResult() {
     '<div class="score"><big>' + st.ok + "/" + st.n + "</big><span>" + p + "% правильних відповідей</span></div>";
   if (S.stage === "pre") h += '<p class="lead">Дякуємо. Розбір і порівняння з другим тестом з’являться після третього етапу, щоб не вплинути на його результат. Далі: етап 2, навчання.</p>';
   if (S.stage === "post") {
-    var pre = ls("af2_res", {})[pkey(S.pid) + "|pre"];
+    var pre = ls("af2_res", {})[idKey(S.pid, S.cls) + "|pre"];
     if (pre) {
       var d = st.ok - pre.ok;
-      h += '<div class="insight">До навчання: ' + pre.ok + " з " + pre.n + ". Після навчання: " + st.ok + " з " + st.n + ". Зміна: " + (d > 0 ? "+" : "") + d + ".</div>";
+      h += '<div class="insight">До навчання: ' + pre.ok + " з " + pre.n + ". Після навчання: " + st.ok + " з " + st.n + ". Зміна: " + (d > 0 ? "+" : "") + d + ".</div>" + personalFig(st, pre);
     }
   }
   if (S.stage === "train") h += '<p class="lead">Далі: етап 3, тест після навчання.</p>';
@@ -959,12 +980,12 @@ function analyze(text) {
     total++;
     var r = parseCode(ln);
     if (!r) { bad++; return; }
-    var key = pkey(r.pid) + "|" + r.stage + (r.stage === "free" ? "|" + r.date : "");
+    var key = idKey(r.pid, r.cls) + "|" + r.stage + (r.stage === "free" ? "|" + r.date : "");
     if (!runs[key] || r.date > runs[key].date) runs[key] = r;
   });
   var list = Object.keys(runs).map(function (k) { var r = runs[k]; r.st = runStats(r); return r; });
   var people = {};
-  list.forEach(function (r) { if (r.stage === "pre" || r.stage === "post") { var k = pkey(r.pid); people[k] = people[k] || { pid: r.pid, cls: r.cls }; people[k][r.stage] = r; } });
+  list.forEach(function (r) { if (r.stage === "pre" || r.stage === "post") { var k = idKey(r.pid, r.cls); people[k] = people[k] || { pid: r.pid, cls: r.cls }; people[k][r.stage] = r; } });
   var P = Object.keys(people).map(function (k) { return people[k]; });
   var both = P.filter(function (x) { return x.pre && x.post; });
   function agg(stage) {
@@ -992,10 +1013,144 @@ function fmtP(p) { return p == null ? "—" : p < 0.001 ? "<0,001" : p.toFixed(3
 function fmtT(t) { return t == null ? "—" : isFinite(t) ? t.toFixed(2).replace(".", ",") : "∞"; }
 function pp(x) { return x == null ? "—" : (x > 0 ? "+" : "") + (x * 100).toFixed(1).replace(".", ",") + " п.п."; }
 
+/* ---------- Інфографіка (SVG) ---------- */
+var CAN_PNG = !(window.claude && window.claude.use);
+var SFONT = "'Golos Text', system-ui, 'Segoe UI', Arial, sans-serif";
+function tx(x, y, t, o) {
+  o = o || {};
+  return '<text x="' + x + '" y="' + y + '" text-anchor="' + (o.anchor || "start") + '" style="font-size:' + (o.size || 12) + 'px;font-weight:' + (o.weight || 400) + ';fill:' + (o.fill || "var(--ink)") + '">' + esc(t) + "</text>";
+}
+function svgWrap(id, w, h, inner, title) {
+  var mark = S.demo ? '<text x="' + w / 2 + '" y="' + h / 2 + '" text-anchor="middle" transform="rotate(-18 ' + w / 2 + " " + h / 2 + ')" style="font-size:56px;font-weight:700;fill:var(--muted);opacity:0.16">ДЕМО</text>' : "";
+  return '<svg xmlns="http://www.w3.org/2000/svg" id="' + id + '" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="' + esc(title) + '" style="width:100%;height:auto;display:block;font-family:' + SFONT + '">' + inner + mark + "</svg>";
+}
+function legendSvg(items, y) {
+  var x = 8, o = "";
+  items.forEach(function (it) {
+    if (it.k === "dot") o += '<circle cx="' + (x + 5) + '" cy="' + (y - 4) + '" r="5" style="fill:' + it.c + '"/>';
+    else if (it.k === "ring") o += '<circle cx="' + (x + 5) + '" cy="' + (y - 4) + '" r="4" style="fill:var(--card);stroke:' + it.c + ';stroke-width:2"/>';
+    else o += '<rect x="' + x + '" y="' + (y - 9) + '" width="10" height="10" style="fill:' + it.c + '"/>';
+    o += tx(x + 15, y, it.t, { size: 11, fill: "var(--muted)" });
+    x += 15 + it.t.length * 5.9 + 14;
+  });
+  return o;
+}
+function chartBars(id, title, groups, legend) {
+  var W = 420, H = 300, L = 40, R = 8, T = 40, B = 54, pw = W - L - R, ph = H - T - B, g = pw / groups.length, bw = Math.min(30, g / 2 - 6), o = legendSvg(legend, 14);
+  [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+    var y = T + ph - v * ph;
+    o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '" style="stroke:var(--grid-ink);stroke-width:1"/>' + tx(L - 6, y + 4, Math.round(v * 100) + "%", { anchor: "end", size: 11, fill: "var(--muted)" });
+  });
+  groups.forEach(function (gr, i) {
+    var cx = L + g * i + g / 2;
+    [[gr.a, -bw - 1, "var(--muted)"], [gr.b, 1, "var(--pen)"]].forEach(function (b) {
+      if (b[0] == null) return;
+      var h = Math.max(1.5, b[0] * ph), x = cx + b[1], y = T + ph - h;
+      o += '<rect x="' + x + '" y="' + y + '" width="' + bw + '" height="' + h + '" style="fill:' + b[2] + '"/>' + tx(x + bw / 2, y - 5, Math.round(b[0] * 100) + "%", { anchor: "middle", size: 11, weight: 600 });
+    });
+    gr.l.forEach(function (ln, j) { o += tx(cx, T + ph + 18 + j * 14, ln, { anchor: "middle", size: 12 }); });
+  });
+  o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + (T + ph) + '" y2="' + (T + ph) + '" style="stroke:var(--ink);stroke-width:1.5"/>';
+  return svgWrap(id, W, H, o, title);
+}
+function chartDumb(id, title, people) {
+  var rows = people.filter(function (x) { return x.pre || x.post; }).map(function (x) {
+    var a = x.pre ? x.pre.st.acc : null, b = x.post ? x.post.st.acc : null;
+    return { n: x.pid, a: a, b: b, d: a != null && b != null ? b - a : -9 };
+  }).sort(function (p, q) { return q.d - p.d || (p.n > q.n ? 1 : -1); });
+  if (!rows.length) return "";
+  var W = 420, L = 136, R = 18, T = 50, rh = 24, H = T + rows.length * rh + 10, pw = W - L - R;
+  function X(v) { return L + v * pw; }
+  var o = legendSvg([{ k: "ring", c: "var(--muted)", t: "До" }, { k: "dot", c: "var(--pen)", t: "Після" }, { k: "sq", c: "var(--green)", t: "стало краще" }, { k: "sq", c: "var(--red)", t: "стало гірше" }], 14);
+  [0, 0.25, 0.5, 0.75, 1].forEach(function (v) {
+    o += '<line x1="' + X(v) + '" x2="' + X(v) + '" y1="' + (T - 6) + '" y2="' + (H - 8) + '" style="stroke:var(--grid-ink);stroke-width:1"/>' + tx(X(v), T - 12, Math.round(v * 100) + "%", { anchor: "middle", size: 10.5, fill: "var(--muted)" });
+  });
+  rows.forEach(function (r, i) {
+    var cy = T + i * rh + rh / 2, nm = r.n.length > 20 ? r.n.slice(0, 19) + "…" : r.n;
+    o += tx(L - 10, cy + 4, nm, { anchor: "end", size: 12 });
+    if (r.a != null && r.b != null) o += '<line x1="' + X(r.a) + '" x2="' + X(r.b) + '" y1="' + cy + '" y2="' + cy + '" style="stroke:' + (r.b > r.a ? "var(--green)" : r.b < r.a ? "var(--red)" : "var(--muted)") + ';stroke-width:3"/>';
+    if (r.a != null) o += '<circle cx="' + X(r.a) + '" cy="' + cy + '" r="5" style="fill:var(--card);stroke:var(--muted);stroke-width:2"/>';
+    if (r.b != null) o += '<circle cx="' + X(r.b) + '" cy="' + cy + '" r="5" style="fill:var(--pen)"/>';
+  });
+  return svgWrap(id, W, H, o, title);
+}
+function chartHard(id, title, runs) {
+  var m = {};
+  runs.forEach(function (r) { if (r.stage !== "pre" && r.stage !== "post") return; r.answers.forEach(function (a) { var x = m[a.id] = m[a.id] || [0, 0]; x[1]++; if (!a.correct) x[0]++; }); });
+  var rows = Object.keys(m).filter(function (k) { return m[k][1] >= 3 && byId(k); }).map(function (k) { return { id: k, w: m[k][0], n: m[k][1], r: m[k][0] / m[k][1] }; })
+    .sort(function (p, q) { return q.r - p.r || q.n - p.n; }).slice(0, 8);
+  if (!rows.length || rows[0].w === 0) return "";
+  var W = 420, L = 150, R = 76, T = 40, rh = 40, H = T + rows.length * rh + 8, pw = W - L - R;
+  function cut(t, n) { return t.length > n ? t.slice(0, n - 1) + "…" : t; }
+  var o = legendSvg([{ k: "sq", c: "var(--c-classic)", t: "класичний фішинг" }, { k: "sq", c: "var(--c-ai)", t: "фішинг від ШІ" }, { k: "sq", c: "var(--c-legit)", t: "справжнє" }], 14);
+  rows.forEach(function (r, i) {
+    var msg = byId(r.id), y = T + i * rh;
+    o += tx(L - 8, y + 16, cut(msg.from, 24), { anchor: "end", size: 12, weight: 600 }) + tx(L - 8, y + 31, cut(msg.subject || msg.body[0], 26), { anchor: "end", size: 10.5, fill: "var(--muted)" });
+    o += '<rect x="' + L + '" y="' + (y + 8) + '" width="' + Math.max(1.5, r.r * pw) + '" height="18" style="fill:var(--c-' + msg.origin + ')"/>' + tx(L + r.r * pw + 6, y + 21, Math.round(r.r * 100) + "% (" + r.w + "/" + r.n + ")", { size: 11, weight: 600 });
+  });
+  o += '<line x1="' + L + '" x2="' + L + '" y1="' + T + '" y2="' + (H - 8) + '" style="stroke:var(--ink);stroke-width:1.5"/>';
+  return svgWrap(id, W, H, o, title);
+}
+function fig(id, title, svg, cap, scroll) {
+  if (!svg) return "";
+  return '<figure class="fig"><figcaption class="fig-t">' + esc(title) + '</figcaption><div class="box-svg' + (scroll ? " figscroll" : "") + '">' + svg + "</div>" + (cap ? '<p class="note">' + cap + "</p>" : "") +
+    (CAN_PNG && !S.demo ? '<div class="row"><button class="btn ghost sm" data-act="png" data-target="' + id + '" data-name="' + id + '.png">Зберегти як PNG</button></div>' : "") + "</figure>";
+}
+function figsHTML(a) {
+  var gr = [{ l: ["Класичний", "фішинг"], a: a.aggPre.classic, b: a.aggPost.classic }, { l: ["Фішинг", "від ШІ"], a: a.aggPre.ai, b: a.aggPost.ai },
+    { l: ["Справжні", "повідомлення"], a: a.aggPre.legit, b: a.aggPost.legit }, { l: ["Усього"], a: a.aggPre.acc, b: a.aggPost.acc }];
+  var leg = [{ k: "sq", c: "var(--muted)", t: "До навчання (N=" + a.aggPre.n + ")" }, { k: "sq", c: "var(--pen)", t: "Після навчання (N=" + a.aggPost.n + ")" }];
+  return '<div class="figs">' +
+    fig("fig-bars", "Частка правильних відповідей до і після навчання", chartBars("fig-bars", "Частка правильних відповідей до і після навчання за типами повідомлень", gr, leg), "Середнє по учасниках. Різниця між «Фішинг від ШІ» і «Класичний фішинг» показує, чи складніше розпізнавати листи від ШІ.") +
+    fig("fig-people", "Результат кожного учасника", chartDumb("fig-people", "Результат кожного учасника до і після навчання", a.people), "Точки показують частку правильних відповідей. Учасники впорядковані від найбільшого зростання.", true) +
+    fig("fig-hard", "Повідомлення, які найчастіше обманюють", chartHard("fig-hard", "Повідомлення, у яких найчастіше помилялися", a.runs), "Частка помилкових відповідей (враховано повідомлення, на які відповіли щонайменше 3 учні). Для справжніх повідомлень помилка означає, що їх визнали фішингом.") +
+    "</div>";
+}
+function personalFig(st, pre) {
+  function r(v) { return v && v[1] ? v[0] / v[1] : null; }
+  var gr = [{ l: ["Класичний", "фішинг"], a: r(pre.cat.classic), b: r(st.cat.classic) }, { l: ["Фішинг", "від ШІ"], a: r(pre.cat.ai), b: r(st.cat.ai) },
+    { l: ["Справжні", "повідомлення"], a: r(pre.cat.legit), b: r(st.cat.legit) }, { l: ["Усього"], a: pre.n ? pre.ok / pre.n : null, b: st.n ? st.ok / st.n : null }];
+  var leg = [{ k: "sq", c: "var(--muted)", t: "До навчання" }, { k: "sq", c: "var(--pen)", t: "Після навчання" }];
+  return fig("fig-me", "Ваш прогрес", chartBars("fig-me", "Ваш прогрес до і після навчання", gr, leg));
+}
+function exportPng(id, name) {
+  var svg = document.getElementById(id); if (!svg) return;
+  var cs = getComputedStyle(document.documentElement);
+  var src = new XMLSerializer().serializeToString(svg).replace(/var\(--([a-z0-9-]+)\)/g, function (_, n) { return (cs.getPropertyValue("--" + n) || "#000").trim().replace(/"/g, "'"); });
+  var vb = svg.viewBox.baseVal, k = 3, img = new Image();
+  img.onload = function () {
+    var c = document.createElement("canvas"); c.width = vb.width * k; c.height = vb.height * k;
+    var x = c.getContext("2d"); x.fillStyle = (cs.getPropertyValue("--card") || "#fff").trim(); x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+    c.toBlob(function (b) {
+      var a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = name || "chart.png";
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+    });
+  };
+  img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(src);
+}
+
+/* Демонстраційні дані: вигадані учні, щоб побачити, як виглядають графіки. Позначаються водяним знаком і не зберігаються. */
+function demoCodes() {
+  var seed = 5; function rnd() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+  var out = [];
+  for (var i = 1; i <= 14; i++) {
+    var name = "Демо Учень " + (i < 10 ? "0" : "") + i, cls = i % 2 ? "9-А" : "9-Б", sk = 0.45 + rnd() * 0.2, o = orderFor(idKey(name, cls));
+    [["pre", o.pre, sk], ["post", o.post, Math.min(0.95, sk + 0.12 + rnd() * 0.25)]].forEach(function (st) {
+      var ans = SETS[st[1]].map(function (id) {
+        var m = byId(id), right = rnd() < st[2] * (m.origin === "ai" ? 0.88 : 1);
+        return [id, (m.phish === right) ? "p" : "s", 2, (1 + rnd() * 4).toFixed(1), rnd() < 0.3 ? 1 : 0, m.link ? (rnd() < 0.3 ? 1 : 0) : "-"].join(":");
+      }).join(",");
+      out.push(["AF1", name, cls, st[0], st[1], "2026-01-01T00:00:00Z", ans].join("|"));
+    });
+  }
+  return out;
+}
+
 function anaHTML(a) {
   if (!a) return "";
   var h = '<p class="note">Рядків: ' + a.total + ", прочитано кодів: " + a.runs.length + (a.bad ? ", не розпізнано: " + a.bad : "") + ". Учасників з обома тестами: " + a.both + ".</p>";
   if (!a.runs.length) return h + '<p class="err">Жодного коду не розпізнано. Код починається з «AF1|».</p>';
+  h += "<h2>Інфографіка</h2>" + figsHTML(a);
   var rows = [["Усього правильних", "acc"], ["Класичний фішинг", "classic"], ["Фішинг від ШІ", "ai"], ["Справжні повідомлення", "legit"], ["Пропущено фішингу", "miss"], ["Хибні тривоги", "fa"], ["Перевірено відправника", "us"], ["Перевірено посилання", "ul"]];
   h += "<h2>Середні показники</h2><div class=\"tbl\"><table><thead><tr><th>Показник</th><th>До навчання (N=" + a.aggPre.n + ")</th><th>Після навчання (N=" + a.aggPost.n + ")</th></tr></thead><tbody>" +
     rows.map(function (r) { return "<tr><td>" + r[0] + "</td><td>" + P0(a.aggPre[r[1]]) + "</td><td>" + P0(a.aggPost[r[1]]) + "</td></tr>"; }).join("") +
@@ -1018,7 +1173,7 @@ function anaHTML(a) {
     }).join("") + "</tbody></table></div>" +
     '<p class="note">Мінус означає, що фішинг від ШІ розпізнавали гірше за класичний. p менше 0,05 зазвичай вважають ознакою значущої різниці, d (розмір ефекту) близько 0,2 малий, 0,5 середній, 0,8 великий. При малій вибірці висновки обережні.</p>';
 
-  h += "<h2>Учасники</h2><div class=\"tbl\"><table><thead><tr><th>Код</th><th>Група</th><th>До</th><th>Після</th><th>Зміна</th></tr></thead><tbody>" +
+  h += "<h2>Учасники</h2><div class=\"tbl\"><table><thead><tr><th>Учасник</th><th>Клас</th><th>До</th><th>Після</th><th>Зміна</th></tr></thead><tbody>" +
     a.people.map(function (x) {
       var pre = x.pre ? x.pre.st : null, post = x.post ? x.post.st : null;
       return "<tr><td>" + esc(x.pid) + "</td><td>" + esc(x.cls || "—") + "</td><td>" + (pre ? pre.ok + "/" + pre.n : "—") + "</td><td>" + (post ? post.ok + "/" + post.n : "—") + "</td><td>" + (pre && post ? pp(post.acc - pre.acc) : "—") + "</td></tr>";
@@ -1033,7 +1188,7 @@ function allCodes() {
   return out.join("\n");
 }
 function viewData() {
-  var txt = allCodes(); S.ana = txt ? analyze(txt) : null;
+  var txt = S.demo ? demoCodes().join("\n") : allCodes(); S.ana = txt ? analyze(txt) : null;
   var status = S.db
     ? (S.dbState === "ok" ? "Підключено до спільної бази. Результати учнів з’являються тут автоматично, записів у базі: " + S.dbCodes.length + "."
       : S.dbState === "error" ? "Не вдалося прочитати спільну базу. Скористайтеся ручним додаванням кодів нижче."
@@ -1045,11 +1200,12 @@ function viewData() {
         : "Дані беруться з Google Таблиці. Введіть ключ доступу й натисніть «Завантажити».")
       : "База не підключена. Додайте коди вручну.";
   return '<section class="panel"><h1>Дані дослідження</h1>' +
-    '<p class="lead">' + esc(status) + '</p>' +
+    (S.demo ? '<p class="demo">Демонстраційний режим: на графіках вигадані учні. Ці дані не можна використовувати в роботі.</p>' : '<p class="lead">' + esc(status) + '</p>') +
     (APPS_URL ? '<div class="fields"><label class="f" for="skey">Ключ доступу<input type="text" id="skey" value="' + esc(S.skey) + '" autocomplete="off"></label><div class="row" style="align-items:end"><button class="btn main sm" data-act="loadsheet">Завантажити</button></div></div>' : "") +
     '<details class="box"><summary>Додати коди вручну</summary><div class="in"><p class="note">Для результатів, які не потрапили в базу. Один код на рядок.</p>' +
-    '<label class="f" for="codes">Коди результатів<textarea id="codes" placeholder="AF1|9Б-07|9-Б|pre|A|2026-10-22T07:27:48Z|M02:s:2:3.1:0:0,...">' + esc(S.dataText) + "</textarea></label>" +
+    '<label class="f" for="codes">Коди результатів<textarea id="codes" placeholder="AF1|Коваленко Олена|9-Б|pre|A|2026-10-22T07:27:48Z|M02:s:2:3.1:0:0,...">' + esc(S.dataText) + "</textarea></label>" +
     '<div class="row"><button class="btn main" data-act="analyze">Порахувати</button><button class="btn ghost" data-act="addlocal">Додати коди з цього пристрою</button><button class="btn ghost" data-act="clearcodes">Очистити</button></div></div></details>' +
+    '<div class="row"><button class="btn ghost sm" data-act="demo">' + (S.demo ? "Вийти з демо" : "Показати демо-графіки") + '</button><button class="btn ghost sm" data-act="hideadmin">Сховати вкладку «Дані»</button></div>' +
     "</section>" + (S.ana ? '<section class="panel">' + anaHTML(S.ana) + "</section>" : "");
 }
 
@@ -1083,7 +1239,7 @@ function viewAbout() {
     "<h2>Як побудовані набори</h2>" +
     '<ul class="plain"><li>База з ' + MSGS.length + " повідомлень у трьох каналах: e-mail, SMS і месенджер.</li>" +
     "<li>Два тести (A і B) однакові за складом: по 5 класичних фішингових, 6 створених ШІ та 5 справжніх. Повідомлення не повторюються ні між тестами, ні в навчанні.</li>" +
-    "<li>Набір A чи B для першого тесту визначається кодом учасника. Так половина учнів починає з A, а половина з B, і різниця між наборами не впливає на результат.</li>" +
+    "<li>Набір A чи B для першого тесту визначається ім’ям і класом учасника. Так половина учнів починає з A, а половина з B, і різниця між наборами не впливає на результат.</li>" +
     "<li>Порядок повідомлень у кожному тесті випадковий.</li>" +
     "<li>Фішинг від ШІ написано великою мовною моделлю за запитом змоделювати такі листи. Усі бренди й адреси вигадані.</li></ul>" +
     "<h2>Що вимірюється</h2>" +
@@ -1112,14 +1268,14 @@ function render() {
 }
 function begin(stage, mode) {
   syncInputs();
-  if (stage !== "free" && S.pid.trim().length < 2) {
-    S.err = "Введіть код учасника (мінімум 2 символи), щоб почати етап.";
+  if (stage !== "free" && (pkey(S.pid).length < 3 || !String(S.cls).trim())) {
+    S.err = "Введіть прізвище, ім’я та клас, щоб почати етап.";
     render();
     return;
   }
   S.err = "";
   lsSet("af2_pid", S.pid); lsSet("af2_cls", S.cls);
-  var o = orderFor(pkey(S.pid)), msgs;
+  var o = orderFor(idKey(S.pid, S.cls)), msgs;
   S.stage = stage; S.date = "";
   if (stage === "pre") { S.setid = o.pre; msgs = setMsgs(o.pre); S.mode = "test"; }
   else if (stage === "post") { S.setid = o.post; msgs = setMsgs(o.post); S.mode = "test"; }
@@ -1146,6 +1302,11 @@ function copyFrom(id, btn) {
 }
 
 document.addEventListener("click", function (e) {
+  var br = e.target.closest(".brand");
+  if (br) {
+    var now = Date.now(); BR = BR.filter(function (t) { return now - t < 3000; }); BR.push(now);
+    if (BR.length >= 5) { BR = []; lsSet("af2_admin", 1); S.view = "data"; render(); window.scrollTo(0, 0); return; }
+  }
   var el = e.target.closest("[data-act]");
   if (!el) return;
   var act = el.getAttribute("data-act");
@@ -1156,6 +1317,7 @@ document.addEventListener("click", function (e) {
   else if (act === "answer") answer(el.getAttribute("data-v"));
   else if (act === "next") next();
   else if (act === "copy") copyFrom(el.getAttribute("data-target"), el);
+  else if (act === "png") exportPng(el.getAttribute("data-target"), el.getAttribute("data-name"));
   else if (act === "again") { S.view = "home"; S.err = ""; render(); window.scrollTo(0, 0); }
   else if (act === "analyze") { syncInputs(); S.ana = analyze(S.dataText); render(); }
   else if (act === "addlocal") {
@@ -1172,6 +1334,8 @@ document.addEventListener("click", function (e) {
       .then(function (j) { if (j && j.ok) { S.sheetCodes = j.codes || []; S.sheetState = "ok"; } else { S.sheetState = "error"; } render(); })
       .catch(function () { S.sheetState = "error"; render(); });
   }
+  else if (act === "hideadmin") { lsSet("af2_admin", 0); try { history.replaceState(null, "", location.pathname + location.search); } catch (x) {} S.view = "home"; S.demo = false; render(); window.scrollTo(0, 0); }
+  else if (act === "demo") { S.demo = !S.demo; render(); }
   else if (act === "clearcodes") { S.dataText = ""; S.ana = null; render(); }
 });
 document.addEventListener("change", function (e) {
@@ -1180,6 +1344,7 @@ document.addEventListener("change", function (e) {
   else if (e.target.id === "pid" || e.target.id === "cls") syncInputs();
 });
 render();
+try { window.addEventListener("hashchange", function () { if (!isAdmin() && S.view === "data") S.view = "home"; render(); }); } catch (e) {}
 try {
   if (window.claude && window.claude.use) {
     window.claude.use("db").then(function (db) {
